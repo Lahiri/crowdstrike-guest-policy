@@ -25,7 +25,7 @@
     PowerShellVersion = '5.0'
 
     # Functions to export from this module
-    FunctionsToExport = @('Get-TargetResource','Set-TargetResource','Test-TargetResource')
+    FunctionsToExport = @('Get-FalconStatus','Set-FalconStatus','Test-FalconStatus')
 
     # DSC Resources to export from this module
     DscResourcesToExport = @('CheckCrowdStrike')
