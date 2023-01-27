@@ -71,7 +71,7 @@ function Get-FalconStatus
         [Parameter()]
         [System.String]
         [ValidateSet("Absent", "Present")]
-        $Ensure
+        $Ensure = "Present"
     )
 
     Write-Verbose -Message "Getting Information about Crowdstrike"
@@ -104,7 +104,14 @@ function Get-FalconStatus
             }
             $nullReturn.Add("Reasons", $Reasons)
 
-            return $nullReturn
+            $result = @{
+                AntivirusName = "Crowdstrike Falcon"
+                Status        = "Stopped"
+                Ensure        = "Absent"
+                Reasons       = $Reasons
+            }
+
+            return $result
         }
 
         # Antivirus should not be installed but it is
@@ -180,7 +187,12 @@ function Get-FalconStatus
             if ($null -ne $instance)
             {
                 Write-Verbose -Message "Found potential Antivirus software {$($instance.Name)} installed"
+                $ensureValue = "Present"
                 break
+            }
+            else {
+                Write-Verbose -Message "Antivirus software {$($instance.Name)} NOT found in installed software"
+                $ensureValue = "Absent"
             }
         }
 
@@ -207,6 +219,9 @@ function Get-FalconStatus
                     if ($service.Status -eq "Running")
                     {
                         Write-Verbose -Message "Service {$($service.DisplayName)} is running"
+                        if ($ensureValue -eq "Absent"){
+                            $ensureValue = "Present"
+                        }
                     }
                     else
                     {
@@ -243,7 +258,7 @@ function Get-FalconStatus
             $result = @{
                 AntivirusName = "Crowdstrike Falcon"
                 Status        = $statusValue
-                Ensure        = "Present"
+                Ensure        = $ensureValue
                 Reasons       = $Reasons
             }
         }
@@ -274,7 +289,7 @@ function Set-FalconStatus
         [Parameter()]
         [System.String]
         [ValidateSet("Absent", "Present")]
-        $Ensure
+        $Ensure = "Present"
     )
 
     throw "Calling the Set-FalconStatus function for Antivirus Crodwstrike Falcon is not supported"
@@ -294,7 +309,7 @@ function Test-FalconStatus
         [Parameter()]
         [System.String]
         [ValidateSet("Absent", "Present")]
-        $Ensure
+        $Ensure = "Present"
     )
 
     Write-Verbose -Message "Testing Settings of Antivirus Crodwstrike Falcon"
@@ -302,6 +317,9 @@ function Test-FalconStatus
     try
     {
         $CurrentValues = Get-FalconStatus @PSBoundParameters
+        if($CurrentValues.Ensure -eq "Absent"){
+            $CurrentValues.Status = "Stopped" #If the Antivirus program is NOT present, it can't be running.
+        }
 
         $result = $true
         if ($CurrentValues.Status -ne $Status -or $CurrentValues.Ensure -ne $Ensure)
