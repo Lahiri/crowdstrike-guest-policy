@@ -277,7 +277,7 @@ function Set-FalconStatus
         $Ensure
     )
 
-    throw "Calling the Set-TargetResource function for Antivirus Crodwstrike Falcon is not supported"
+    throw "Calling the Set-FalconStatus function for Antivirus Crodwstrike Falcon is not supported"
 }
 
 function Test-FalconStatus
@@ -301,7 +301,7 @@ function Test-FalconStatus
 
     try
     {
-        $CurrentValues = Get-TargetResource @PSBoundParameters
+        $CurrentValues = Get-FalconStatus @PSBoundParameters
 
         $result = $true
         if ($CurrentValues.Status -ne $Status -or $CurrentValues.Ensure -ne $Ensure)
@@ -315,12 +315,12 @@ function Test-FalconStatus
                 Write-Verbose -Message "-->$($reason.Phrase)"
             }
         }
-        Write-Verbose -Message "Test-TargetResource returned $result"
+        Write-Verbose -Message "Test-FalconStatus returned $result"
         return $result
     }
     catch
     {
-        Write-Verbose -Message "Something went wrong in the Test-TargetResource method"
+        Write-Verbose -Message "Something went wrong in the Test-FalconStatus method"
     }
     return $false
 }
