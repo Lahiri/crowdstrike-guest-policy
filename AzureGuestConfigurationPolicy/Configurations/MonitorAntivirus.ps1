@@ -1,17 +1,28 @@
-Configuration MonitorAntivirus
-{
-    Import-DscResource -ModuleName EndPointProtectionDSC
+# Configuration MonitorAntivirus
+# {
+#     Import-DscResource -ModuleName C:\Dev\Customer\Zurich\crowdstrike-policy\EndPointProtectionDSC.psd1 #EndPointProtectionDSC
 
-    Node MonitorAntivirus
-    {
-        EPAntivirusStatus AV
-        {
-            AntivirusName = "Windows Defender"
-            Status        = "Running"
-            Ensure        = "Present"
-        }
+#     Node localhost
+#     {
+
+#         FalconStatus AV
+#         {
+#             Status        = "Running"
+#             Ensure        = "Present"
+#         }
+#     }
+# }
+
+# #cd $env:Temp
+# MonitorAntivirus
+
+Configuration MyConfig {
+    Import-DSCResource -module Modules\CheckCrowdStrike\CheckCrowdStrike.psd1
+    CheckCrowdStrike localhost {
+        Name = "Crowdsrike"
+        Status = "Running"
+        Ensure = "Present"
     }
 }
 
-cd $env:Temp
-MonitorAntivirus
+MyConfig

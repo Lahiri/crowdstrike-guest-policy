@@ -1,3 +1,24 @@
+﻿enum ensure {
+    Absent
+    Present
+}
+
+<#
+    This class is used within the DSC Resource to standardize how data
+    is returned about the compliance details of the machine.
+#>
+class Reason {
+    [DscProperty()]
+    [string] $Code
+
+    [DscProperty()]
+    [string] $Phrase
+}
+
+<#
+    Private Functions
+#>
+
 function Get-CrowdstrikeInstallationStatus
 {
     [CmdletBinding()]
@@ -33,7 +54,10 @@ function Get-EPDSCProcessByReportingExecutable
     return $processInfo
 }
 
-function Get-TargetResource
+<#
+    Public Functions
+#>
+function Get-FalconStatus
 {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
@@ -237,7 +261,7 @@ function Get-TargetResource
     return $result
 }
 
-function Set-TargetResource
+function Set-FalconStatus
 {
     [CmdletBinding()]
     param
@@ -256,7 +280,7 @@ function Set-TargetResource
     throw "Calling the Set-TargetResource function for Antivirus Crodwstrike Falcon is not supported"
 }
 
-function Test-TargetResource
+function Test-FalconStatus
 {
     [CmdletBinding()]
     [OutputType([System.Boolean])]
@@ -299,4 +323,33 @@ function Test-TargetResource
         Write-Verbose -Message "Something went wrong in the Test-TargetResource method"
     }
     return $false
+}
+
+[DscResource()]
+class CheckCrowdStrike {
+    [DscProperty(Key)]
+    [string] $name
+
+    [DscProperty(Mandatory)]
+    [ensure] $ensure
+
+    [DscProperty(Mandatory)]
+    [string] $status
+
+    [DscProperty(NotConfigurable)]
+    [Reason[]] $Reasons
+
+    [CheckCrowdStrike] Get() {
+        $get = Get-FalconStatus -Ensure $this.ensure -Status $this.status
+        return $get
+    }
+
+    [void] Set() {
+        $null = Set-FalconStatus -Ensure $this.ensure -Status $this.status
+    }
+
+    [bool] Test() {
+        $test = Test-FalconStatus -Ensure $this.ensure -Status $this.status
+        return $test
+    }
 }

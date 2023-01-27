@@ -33,7 +33,7 @@ function New-EPDSCAzureGuestConfigurationPolicyPackage {
 
     # Select a subscription to create Resource Group and Storage Account
     Select-Subscription
-    
+
     Write-Host "Done" -ForegroundColor Green
 
     Write-Host "Checking if policy already published, if so incrementing version..."
@@ -49,7 +49,7 @@ function New-EPDSCAzureGuestConfigurationPolicyPackage {
 
     [string]$Version = $NewVersion.ToString()
 
-    $PackageName = "MonitorAntivirus_$Version" 
+    $PackageName = "MonitorAntivirus_$Version"
 
     Write-Host "Compiling Configuration into a MOF file..." -NoNewLine
     if (Test-Path 'MonitorAntivirus') {
@@ -59,7 +59,7 @@ function New-EPDSCAzureGuestConfigurationPolicyPackage {
     Write-Host "Done" -ForegroundColor Green
 
     Write-Host "Generating Guest Configuration Package..." -NoNewLine
-    
+
     New-GuestConfigurationPackage -Name $PackageName `
         -Configuration "$env:Temp/MonitorAntivirus/MonitorAntivirus.mof" -Force | Out-Null
     Write-Host "Done" -ForegroundColor Green
@@ -79,7 +79,7 @@ function New-EPDSCAzureGuestConfigurationPolicyPackage {
     Import-LocalizedData -BaseDirectory "$PSScriptRoot/ParameterFiles/" `
         -FileName "EPAntivirusStatus.Params.psd1" `
         -BindingVariable ParameterValues | Out-Null
-    
+
     New-GuestConfigurationPolicy `
         -ContentUri $Url `
         -DisplayName 'Monitor Antivirus' `
@@ -150,8 +150,8 @@ function Publish-EPDSCPackage {
 
     # Enable Static Web
     Enable-AzStorageStaticWebsite -Context $storageContext
-    
-    # Upload to static web    
+
+    # Upload to static web
     $blobName = "MonitorAntivirus_$Version.zip"
 
     Set-AzStorageblobcontent -File $($env:Temp + "/MonitorAntivirus_$Version/MonitorAntivirus_$Version.zip") `
@@ -163,14 +163,14 @@ function Publish-EPDSCPackage {
     # Re-read Storage account and obtain static web URL
     $storageAccount = Get-AzStorageAccount -Name $StorageAccountName `
         -ResourceGroupName $ResourceGroupName
-    
+
     $url = $storageAccount.PrimaryEndpoints.Web + $blobName
-    
+
     # Check to make sure the url is good
 
     $response = $null
     do {
-        try { $response = Invoke-WebRequest -Uri $url -UseBasicParsing } catch {}           
+        try { $response = Invoke-WebRequest -Uri $url -UseBasicParsing } catch {}
         Start-Sleep -Seconds 3
     } until ($response -and ($response.StatusCode -eq 200))
 
@@ -186,12 +186,12 @@ function Select-Subscription {
         For ($i = 0; $i -lt $subscriptions.count; $i++) {
             $numberedSubscriptions += $subscriptions[$i] | Select-Object @{Name = 'No'; Expression = { $i + 1 } }, Name, Id, TenantId
         }
-        
+
         [int]$subNumber = $null
         do {
             Write-Host "Select from following subscriptions to create Resource Group and Storage Account"
             Write-Host ($numberedSubscriptions | Format-Table | Out-String)
-    
+
             $subNumber = Read-Host "Select No"
         } until ($subNumber -and ($subNumber -match "^\d+$") -and ($subNumber -le ($numberedSubscriptions.count)) -and ($subNumber -ge 1))
 
@@ -199,21 +199,21 @@ function Select-Subscription {
     }
     else {
         Write-Error "Cannot find any subscription"
-        exit
+        throw
     }
 }
 
 function Get-AzCachedAccessToken() {
     $ErrorActionPreference = 'Stop'
-  
+
     if (-not (Get-Module Az.Accounts)) {
         Import-Module Az.Accounts
     }
     $azProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile
     if (-not $azProfile.Accounts.Count) {
-        Write-Error "Ensure you have logged in before calling this function."    
+        Write-Error "Ensure you have logged in before calling this function."
     }
-  
+
     $currentAzureContext = Get-AzContext
     $profileClient = New-Object Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient($azProfile)
     Write-Debug ("Getting access token for tenant" + $currentAzureContext.Tenant.TenantId)
@@ -250,7 +250,7 @@ function Select-ManagementGroup {
     }
     else {
         Write-Error "Unable to find any top level management groups"
-        exit
+        throw
     }
 
     # Get descendants management groups
@@ -282,6 +282,6 @@ function Select-ManagementGroup {
 
         $subNumber = Read-Host "Select No"
     } until ($subNumber -and ($subNumber -match "^\d+$") -and ($subNumber -le ($numberedMGs.count)) -and ($subNumber -ge 1))
-    
+
     $numberedMGs[$subNumber - 1].name
 }

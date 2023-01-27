@@ -1,0 +1,14 @@
+﻿[ClassVersion("1.0.0.0")]
+class Reason
+{
+    [Read] String Phrase;
+    [Read] String Code;
+};
+[ClassVersion("1.0.0.0"), FriendlyName("FalconStatus")]
+class CheckCrowdstrike : OMI_BaseResource
+{
+    [Key] String Name
+    [Write, Description("Specifies the status of the Antivirus agent."), ValueMap{"Running","Stopped"}, Values{"Running","Stopped"}] String Status;
+    [Write, Description("Specifies if the Antivirus Software should be installed or not."), ValueMap{"Present","Absent"}, Values{"Present","Absent"}] String Ensure;
+    [Read, EmbeddedInstance("Reason")] String Reasons[];
+};
